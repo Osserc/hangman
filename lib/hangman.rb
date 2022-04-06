@@ -1,8 +1,19 @@
 class Hangman
 
     def play_game
-        word = Word.new.generate_word
+        word = Word.new.generate_word.downcase
         puts word
+        input_letter
+    end
+
+    def input_letter
+        puts "Insert letter"
+        letter = gets.chomp.downcase
+        until letter.length == 1 && letter <= "z" && letter >= "a" do
+            puts "Please insert a letter, not some weird character"
+            letter = gets.chomp.downcase
+        end
+        puts letter
     end
 
 end
