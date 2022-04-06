@@ -9,22 +9,24 @@ class Hangman
     end
 
     def play_game
-        puts @word
+        puts "You made it just in time! Dirty Don is convinced Jimbo is a fed and is going to hang him in front of the whole town!\nThe only way to save him is to guess a secret password that Don made up, one letter at a time. Be careful though, we only have 10 tries!\nPlease friend, save Jimbo! He did nothing wrong!\n\n"
+        puts @word.join
+        display_state_of_the_game
         while @attempts > 0 do
-            resolving_guess(input_letter)
+            resolving_guess(input_action)
             display_state_of_the_game
             check_game_state()
         end
     end
 
-    def input_letter
-        puts "Insert letter"
+    def input_action
+        puts "\nCome on, let\'s try a letter!"
         letter = gets.chomp.downcase
         until letter.length == 1 && letter <= "z" && letter >= "a" && (@right_letters + @wrong_letters).include?(letter) == false do
             if (@right_letters + @wrong_letters).include?(letter) == true
-                puts "You already typed #{letter}, we can\'t wast any time retreading old ground!"
+                puts "\nYou already tried #{letter}, we can\'t wast any time retreading old ground!"
             else
-                puts "Please take this seriously, Jimbo\'s life is at stake!"
+                puts "\nPlease take this seriously, Jimbo\'s life is at stake!"
             end
             letter = gets.chomp.downcase
         end
@@ -49,7 +51,6 @@ class Hangman
         positions = Array.new
         @word.each_with_index do | element, index |
             if element == letter
-                @word[index] = nil
                 positions.push(index)
             end
         end
@@ -59,6 +60,14 @@ class Hangman
     def guess_wrong(letter)
         @wrong_letters.push(letter)
         @attempts -= 1
+    end
+
+    def save_game(letter)
+
+    end
+
+    def load_game(letter)
+
     end
 
     def update_progress(positions, letter)
@@ -72,25 +81,25 @@ class Hangman
     end
 
     def display_state_of_the_game
-        puts "Right letters: #{@right_letters.join(" ")} | Wrong letters: #{@wrong_letters.join(" ")} | Turns until Jimbo gets it: #{@attempts}."
+        puts "\nRight letters: #{@right_letters.join(" ")} | Wrong letters: #{@wrong_letters.join(" ")} | Turns until Jimbo gets it: #{@attempts}."
         puts @progress.join(" ")
     end
 
-    def check_game_state
-        if @word.compact.empty? == true
-            puts "Congratulations, you won!"
+    def check_game_state()
+        if @word == @progress
+            puts "\nYou saved Jimbo! I\'ll forever be in your debt!\n"
             decide_future
         elsif @attempts == 0
-            puts "You lost, buddy. Better luck next time!"
+            puts "\nYou... you killed Jimbo! And all becase you couldn\'t figure out that the secret password was '#{@word.join}'! Pray our paths never cross again...\n"
             decide_future
         end
     end
 
     def decide_future
-        puts "Would you like to play again?"
+        puts "\nWould you like to play again?"
         answer = gets.chomp.downcase
         until answer == "yes" || answer == "no"
-            puts "Come on, it\'s a yes or no question."
+            puts "\nCome on, it\'s a yes or no question."
             answer = gets.chomp.downcase
         end
         if answer == "yes"
@@ -99,7 +108,6 @@ class Hangman
             exit
         end
     end
-
 end
 
 class Dictionary
