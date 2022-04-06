@@ -9,11 +9,12 @@ class Hangman
     end
 
     def play_game
-        positions = Array.new
         puts @word
-        resolving_guess(input_letter)
+        while @attempts < 10 do
+            resolving_guess(input_letter)
 
-        check_game_state()
+            check_game_state()
+        end
     end
 
     def input_letter
@@ -40,7 +41,7 @@ class Hangman
 
     def guess_right(letter)
         @right_letters.push(letter)
-        positions.clear
+        positions = Array.new
         @word.each_with_index do | element, index |
             if element == letter
                 @word[index] = nil
@@ -56,10 +57,26 @@ class Hangman
     end
 
     def check_game_state
-        if @word.empty? == true
+        if @word.compact.empty? == true
             puts "Congratulations, you won!"
-        elsif @attempts == 12
+            decide_future
+        elsif @attempts == 10
             puts "You lost, buddy. Better luck next time!"
+            decide_future
+        end
+    end
+
+    def decide_future
+        puts "Would you like to play again?"
+        answer = gets.chomp.downcase
+        until answer == "yes" || answer == "no"
+            puts "Come on, it\'s a yes or no question."
+            answer = gets.chomp.downcase
+        end
+        if answer == "yes"
+            Hangman.new.play_game
+        else
+            exit
         end
     end
 
