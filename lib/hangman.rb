@@ -99,7 +99,8 @@ class Hangman
         file = gets.chomp
         dirname = "savegames"
         Dir.mkdir(dirname) unless File.exists?(dirname)
-        File.open("#{dirname}/#{file}.json", 'w'){| f | f.write(to_json)} 
+        File.open("#{dirname}/#{file}.json", 'w'){| f | f.write(to_json)}
+        puts "\nYour game has been saved."
     end
 
     def load_game
