@@ -1,3 +1,5 @@
+require "json"
+
 class Hangman
 
     def initialize
@@ -9,8 +11,7 @@ class Hangman
     end
 
     def play_game
-        puts "You made it just in time! Dirty Don is convinced Jimbo is a fed and is going to hang him in front of the whole town!\nThe only way to save him is to guess a secret password that Don made up, one letter at a time. Be careful though, we only have 10 tries!\nPlease friend, save Jimbo! He did nothing wrong!\n\n"
-        puts @word.join
+        puts "You made it just in time! Dirty Don is convinced Jimbo is a fed and is going to hang him in front of the whole town!\nThe only way to save him is to guess a secret password that Don made up, one letter at a time. Be careful though, we only have 10 tries!\nPlease friend, save Jimbo! He did nothing wrong!\n\nPsst, you can save and reload anytime by typing either save or load instead of a letter!\n\n"
         display_state_of_the_game
         while @attempts > 0 do
             resolving_guess(input_action)
@@ -22,7 +23,7 @@ class Hangman
     def input_action
         puts "\nCome on, let\'s try a letter!"
         letter = gets.chomp.downcase
-        until letter.length == 1 && letter <= "z" && letter >= "a" && (@right_letters + @wrong_letters).include?(letter) == false do
+        until check_validity(letter) == true || check_save_load(letter) == true do
             if (@right_letters + @wrong_letters).include?(letter) == true
                 puts "\nYou already tried #{letter}, we can\'t wast any time retreading old ground!"
             else
@@ -30,19 +31,50 @@ class Hangman
             end
             letter = gets.chomp.downcase
         end
-        letter
+        if check_save_load(letter) == true
+            memory_function(letter)
+            letter
+        else
+            letter
+        end
     end
 
     def check_letter(letter)
         @word.include?(letter)
     end
 
+    def check_validity(letter)
+        if (letter.length == 1 && letter <= "z" && letter >= "a" && (@right_letters + @wrong_letters).include?(letter) == false)
+            return true
+        end
+    end
+
+    def check_save_load(letter)
+        if letter == "save" || letter == "load"
+            return true
+        end
+    end
+
+    def memory_function(letter)
+        if letter == "save"
+            save_game
+        elsif letter == "load" && Dir.exist?("savegames") == true && Dir.empty?("savegames") == false
+            load_game
+        else
+            puts "\nNo saved game detected."
+        end
+    end
+
     def resolving_guess(letter)
-        if check_letter(letter) == true
+        if check_save_load(letter) == true
+            return
+        elsif check_letter(letter) == true
             positions = guess_right(letter)
             update_progress(positions, letter)
-        else
+        elsif check_letter(letter) == false
             guess_wrong(letter)
+        else
+            return
         end
     end
 
@@ -62,12 +94,46 @@ class Hangman
         @attempts -= 1
     end
 
-    def save_game(letter)
-
+    def save_game
+        puts "\nWhich name would you like to assign to your savegame?"
+        file = gets.chomp
+        dirname = "savegames"
+        Dir.mkdir(dirname) unless File.exists?(dirname)
+        File.open("#{dirname}/#{file}.json", 'w'){| f | f.write(to_json)} 
     end
 
-    def load_game(letter)
+    def load_game
+        puts "\nWhich game would you like to load?"
+        display_savegames
+        file = gets.chomp
+        until Dir.glob("savegames/*").map {| element | element.delete_prefix("savegames/").delete_suffix(".json")}.include?(file) do
+            puts "\nThat\'s not a valid savegame. You have to match one from memory."
+            file = gets.chomp
+        end
+        from_json("#{file}.json")
+    end
 
+    def display_savegames
+        puts Dir.glob("savegames/*").map {| element | element.delete_prefix("savegames/").delete_suffix(".json")}.join("\n")
+    end
+
+    def to_json
+        JSON.dump ({
+          :word => @word,
+          :attempts => @attempts,
+          :right_letters => @right_letters,
+          :wrong_letters => @wrong_letters,
+          :progress => @progress
+        })
+      end
+    
+    def from_json(string)
+        data = JSON.load(File.read("savegames/#{string}"))
+        @word = data['word']
+        @attempts = data['attempts']
+        @right_letters = data['right_letters']
+        @wrong_letters = data['wrong_letters']
+        @progress = data['progress']
     end
 
     def update_progress(positions, letter)
